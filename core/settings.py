@@ -20,14 +20,13 @@ DATABASE_PATH = CONFIG_DIR / "data_base.db"
 LICENSES_PATH = CONFIG_DIR / "licenses.json"
 
 # Пути к файлам данных и внешним утилитам
-LUA_DECOMPILER_UTIL = r"D:\Programs\decompiler"
-CORONA_ARCHIVER_UTIL = r"D:\Programs\Corona_Archiver\corona-archiver-master\corona_archiver.py"
-KEYTOOL_UTIL = r"D:\Programs\JDK\jdk-17.0.16+8\bin\keytool.exe"
+LUA_DECOMPILER_UTIL = r"C:\Users\Stanger\Documents\dayr\decompiler"
+CORONA_ARCHIVER_UTIL = r"C:\Users\Stanger\Documents\dayr\Corona_Archiver\corona-archiver-master\corona_archiver.py"
+KEYTOOL_UTIL = r"C:\Users\Stanger\Documents\dayr\JDK\JDK\jdk-17.0.16+8\bin\keytool.exe"
+ARCHIVE_DIR = r"C:\Users\Stanger\Documents\dayr\input" # Архив АПК для сортировки и анализа
+SORT_DIR = r"C:\Users\Stanger\Documents\dayr\output" # Отсортированный архив АПК
 
-ARCHIVE_DIR = r"D:\Media\TEST ARCHIVE" # Архив АПК для сортировки и анализа
-SORT_DIR = r"D:\Media\04. Games\Day R\Sort APK" # Отсортированный архив АПК
-
-DECOMPILE_LUA_DIR = r"D:\Programs\decompiler"
+DECOMPILE_LUA_DIR = r"C:\Users\Stanger\Documents\dayr\decompiler"
 
 
 # -------------------------------------------------------------------------------

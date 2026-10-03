@@ -3,3 +3,5 @@
 __pycache__/
 *.pyc
 data_base.db
+/logs
+logs/app.log

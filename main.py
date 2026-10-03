@@ -1,62 +1,65 @@
-# -------------------------------------------------------------------------------
-# -- Импорты
-# -------------------------------------------------------------------------------
 from pathlib import Path
-from loguru import logger
 import sqlite3 as sql
-import time
+
+from loguru import logger
 
 from core import settings
 from core.analyzer import get_apk_files_sha256, get_apk_info
 from core.prints import print_result
-from core.data_base import init_db, check_db, read_db, write_db, add_db
+from core.data_base import init_db, get_apk, write_db, add_db
 from games.day_r import run_sort
+
 logger.remove()
+logger.add(
+    "logs/app.log",
+    rotation="10 MB",
+    retention="7 days",
+    level="INFO",
+)
 
 
-# -------------------------------------------------------------------------------
-# -- Функции
-# -------------------------------------------------------------------------------
 def main():
-    """
-    Вход в программу. Начало процесса.
-    """
+    """Вход в программу. Начало процесса."""
+    total = 0
+    errors = 0
 
-    # Единая сессия подключения на весь цикл обработки
+    # Единая сессия подключения на весь цикл обработки.
     with sql.connect(settings.DATABASE_PATH) as conn:
+        conn.row_factory = sql.Row
         init_db(conn)
 
-        # Проверяем каждый APK из архива по очереди
         for i, apk in enumerate(Path(settings.ARCHIVE_DIR).rglob("*.apk"), start=1):
-            if i > 2: # Временная заглушка: берём только первые 5 APK
-                break
+            total = i
+            logger.info(f"АПК №{i}: {apk}")
 
-            print(f"АПК №{str(i)}")
+            try:
+                sha256 = get_apk_files_sha256(apk)
+                info = get_apk(sha256, conn)
 
-            sha256 = get_apk_files_sha256(apk)  # Хеш APK
+                if info is not None:
+                    logger.info(f"{i}. --- Старый APK ---")
+                else:
+                    info = get_apk_info(apk, sha256)
+                    write_db(info, conn)
+                    logger.info(f"{i}. --- Новый APK ---")
 
-            if check_db(sha256, conn):
-                add_db(sha256, conn, apk.stem)
-                info = read_db(conn, apk_files_sha256=sha256)
+                file_names = add_db(sha256, conn, apk.stem, apk_file_path=str(apk))
+                info.apk_file_names = file_names
 
-                print(f"{i}. --- Старый APK ---")
-                print_result(info[0])
-                run_sort(apk, info[0])
-                print("Перерыв 2 секунды...")
-                time.sleep(2)
-            else:
-                info = get_apk_info(apk, sha256) # Получаем всю информацию о APK
-                write_db(info, conn)
+                conn.commit()
 
-                print(f"{i}. --- Новый APK ---")
                 print_result(info)
                 run_sort(apk, info)
-                print("Перерыв 2 секунды...")
-                time.sleep(2)
+
+            except Exception:
+                errors += 1
+                logger.exception(f"Ошибка при обработке {apk}")
+                conn.rollback()
+                continue
+            print("\n \n")
+
+    logger.info(f"Обработано APK: {total}, ошибок: {errors}")
 
 
-# -------------------------------------------------------------------------------
-# -- Вызов
-# -------------------------------------------------------------------------------
 if __name__ == '__main__':
     main()
